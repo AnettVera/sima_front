@@ -74,7 +74,8 @@ const StoragesPage = () => {
   }
 
   const handleViewStorage = (storageId) => {
-    navigate(`/storages/${storageId}`)
+    navigate("/storages/details/", { state: { id: storageId } });
+
   }
 
   const displayStorages = filteredStorages.length > 0 ? filteredStorages : storages
@@ -125,7 +126,6 @@ const StoragesPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedStorages.map((storage, index) => (
             <div key={storage.id} className="card p-4 text-black relative">
-              {/* 🔄 Switch en la esquina superior derecha */}
               <label className="absolute top-4 right-4 inline-flex items-center cursor-pointer z-10">
                 <input
                   type="checkbox"

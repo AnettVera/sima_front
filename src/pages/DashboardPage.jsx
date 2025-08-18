@@ -140,7 +140,7 @@ const DashboardPage = () => {
               <h3 className="text-lg font-semibold text-secondary mb-2"># {storage.storageIdentifier}</h3>
               <p className="text-text-primary font-medium mb-2">{storage.category?.categoryName || "Sin categoría"}</p>
               <p className="text-text text-sm mb-4">Responsable: {storage.responsible?.name || "Sin asignar"}</p>
-              <button onClick={() => navigate(`/storages/${storage.id}`)} className="btn-primary w-full">
+              <button onClick={() => navigate("/storages/details/", { state: { id: storage.id }}) }  className="btn-primary w-full">
                 Visualizar
               </button>
             </div>

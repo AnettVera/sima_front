@@ -1,5 +1,3 @@
-"use client"
-
 import { createContext, useContext, useState, useEffect } from "react"
 import { authService } from "../config/api"
 import { userService } from "../config/api"

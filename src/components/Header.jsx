@@ -45,7 +45,12 @@ const Header = () => {
   };
 
   const handleLogoClick = () => {
-    navigate("/");
+    if (user.role === "ADMIN") {
+      navigate("/");
+    } else {
+      navigate("/dashboard/user");
+    }
+
   };
 
 
