@@ -34,16 +34,18 @@ api.interceptors.response.use(
     }
 
     const errorMessage = error.response?.data?.message || "Error en la operación";
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: errorMessage,
-      confirmButtonColor: "#16423C",
-      customClass: {
-        popup: "rounded-lg",
-        confirmButton: "rounded-lg",
-      },
-    });
+    if (errorMessage !== "No se encontró almacén para este responsable") {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonColor: "#16423C",
+        customClass: {
+          popup: "rounded-lg",
+          confirmButton: "rounded-lg",
+        },
+      });
+    }
 
     return Promise.reject(error);
   },

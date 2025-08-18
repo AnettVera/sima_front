@@ -1,0 +1,28 @@
+# Ignorar node_modules
+node_modules/
+
+# Ignorar logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignorar directorios de sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Ignorar compilaciones
+dist/
+build/
+
+# Ignorar coverage de tests
+coverage/
+
+# Ignorar archivos temporales
+*.swp
+*.swo

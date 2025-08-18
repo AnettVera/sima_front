@@ -59,20 +59,21 @@ const DashboardUser = () => {
 
     const fetchStorageDetails = async () => {
         try {
-            setLoading(true)
-            const [storageResponse, articlesResponse] = await Promise.all([
-                storageService.getByResponsible(id),
-                articleService.getArticlesByUser(id),
+            setLoading(true);
+            const storageResponse = await storageService.getByResponsible(id);
+            const storageData = storageResponse.data.data;
+            setStorage(storageData);
 
-            ])
-
-            setStorage(storageResponse.data.data)
-            setArticles(articlesResponse.data.data)
-            console.log(storageResponse.data.data)
+            if (storageData && storageData.id) {
+                const articlesResponse = await articleService.getArticlesByUser(storageData.id);
+                setArticles(articlesResponse.data.data);
+            } else {
+                setArticles([]);
+            }
         } catch (error) {
-            console.error("Error fetching storage details:", error)
+            console.error("Error fetching storage details:", error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
@@ -189,6 +190,8 @@ const DashboardUser = () => {
 
     return (
         <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Alamacén:{storage.storageIdentifier} - Categoría: {storage.category.categoryName}</h2>
+
             <div className={`grid grid-cols-1 ${isStorageActive ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 mb-8`}>
                 <div className="card text-center">
                     <h3 className="text-lg font-semibold text-text-primary mb-2">Articulos</h3>

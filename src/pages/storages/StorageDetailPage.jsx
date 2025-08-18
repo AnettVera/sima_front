@@ -24,7 +24,6 @@ const StorageDetailPage = () => {
   const isStorageActive = storage?.status === true;
 
   const { articles: allArticles, assignArticleToStorage, loading: loadingArticles } = useArticles()
-  // Filtrar artículos por categoría del almacén y que no estén ya en el almacén
     const availableArticles = storage && allArticles
         ? allArticles.filter(
             (a) =>
@@ -149,8 +148,8 @@ const StorageDetailPage = () => {
           <button
             onClick={() => {
               setIsAddModalOpen(false)
-              setSelectedArticle(null) // limpia el artículo
-              setSelectedArticleId("") // limpia el ID
+              setSelectedArticle(null)
+              setSelectedArticleId("") 
             }}
             className="btn-primary"
           >
@@ -176,8 +175,7 @@ const StorageDetailPage = () => {
 
   return (
     <div className="space-y-6">
-
-
+        <h2 className="text-xl font-semibold text-text-primary mb-4">Alamacén:{storage.storageIdentifier} - Categoría: {storage.category.categoryName}</h2>
         <div className={`grid grid-cols-1 ${isStorageActive ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 mb-8`}>
         <div className="card text-center">
           <h3 className="text-lg font-semibold text-text-primary mb-2">Articulos</h3>
@@ -191,9 +189,7 @@ const StorageDetailPage = () => {
         </div>
             {isStorageActive && (
            <div className="card text-center" onClick={() => navigate(`/articles/`, { state: { category: storage.category?.categoryName } })}>
-                    <button
-
-                    >
+                    <button>
                         <h3 className="text-lg font-semibold text-text-primary mb-2">Registrar producto</h3>
 
                         <div className="text-center">
@@ -220,7 +216,6 @@ const StorageDetailPage = () => {
       </div>
 
       <div className="card text-black">
-        {/* Modal para agregar artículo */}
         <Modal isOpen={isAddModalOpen} onClose={async () => { setIsAddModalOpen(false); await fetchStorageDetails(); }} title="Agregar artículo al almacén">
           <div className="space-y-4">
             <label className="block text-sm font-medium text-text-primary mb-2">Selecciona un artículo:</label>
@@ -255,7 +250,6 @@ const StorageDetailPage = () => {
                 const value = Number(e.target.value);
                 if (!selectedArticle) return;
 
-                // Si supera el stock, se corrige automáticamente
                 if (value > selectedArticle.quantity) {
                   setAddQuantity(selectedArticle.quantity);
                 } else {
