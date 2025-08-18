@@ -8,9 +8,11 @@ import Modal from "../../components/Modal"
 import { useArticles } from "../../hooks/useArticles"
 import Swal from "sweetalert2"
 import { Plus } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const StorageDetailPage = () => {
-  const { id } = useParams()
+  const { state } = useLocation();
+  const id = state?.id;
   const navigate = useNavigate()
   const [storage, setStorage] = useState(null)
   const [articles, setArticles] = useState([])
@@ -19,6 +21,7 @@ const StorageDetailPage = () => {
   const [selectedArticleId, setSelectedArticleId] = useState("")
   const [addQuantity, setAddQuantity] = useState(1)
   const [selectedArticle, setSelectedArticle] = useState(null)
+  const isStorageActive = storage?.status === true;
 
   const { articles: allArticles, assignArticleToStorage, loading: loadingArticles } = useArticles()
   // Filtrar artículos por categoría del almacén y que no estén ya en el almacén
@@ -70,13 +73,14 @@ const StorageDetailPage = () => {
         }
     }
 
-  const handleMoveArticle = async (articleId, articleName) => {
+  const handleMoveArticle = async (articleId, articleName,availableQuantity) => {
     const { value: quantity } = await Swal.fire({
       title: `Mover ${articleName}`,
       text: "Ingresa la cantidad a mover:",
       input: "number",
       inputAttributes: {
         min: 1,
+          max:availableQuantity,
         step: 1,
       },
       showCancelButton: true,
@@ -93,6 +97,9 @@ const StorageDetailPage = () => {
         if (!value || value <= 0) {
           return "Debes ingresar una cantidad válida"
         }
+          if (value > availableQuantity) {
+              return `Solo hay ${availableQuantity} unidades disponibles`
+          }
       },
     })
 
@@ -171,9 +178,9 @@ const StorageDetailPage = () => {
     <div className="space-y-6">
 
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className={`grid grid-cols-1 ${isStorageActive ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 mb-8`}>
         <div className="card text-center">
-          <h3 className="text-lg font-semibold text-text-primary mb-2">Productos</h3>
+          <h3 className="text-lg font-semibold text-text-primary mb-2">Articulos</h3>
           <div className="text-3xl font-bold text-secondary">{articles.length}</div>
         </div>
         <div className="card text-center">
@@ -182,6 +189,7 @@ const StorageDetailPage = () => {
             {storage.responsible ? `${storage.responsible.name} ${storage.responsible.lastName}` : "Sin asignar"}
           </div>
         </div>
+            {isStorageActive && (
            <div className="card text-center" onClick={() => navigate(`/articles/`, { state: { category: storage.category?.categoryName } })}>
                     <button
 
@@ -197,8 +205,10 @@ const StorageDetailPage = () => {
 
                         </div>
                     </button>
-                </div>
-        <div className="card text-center">
+           </div>
+
+            )}
+            <div className="card text-center">
           <h3 className="text-lg font-semibold text-text-primary mb-2">Estado</h3>
           <span
             className={`px-3 py-1 rounded-full text-sm ${storage.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
@@ -274,6 +284,7 @@ const StorageDetailPage = () => {
         </Modal>
         <div className="flex justify-between items-center gap-4">
           <h2 className="text-xl font-semibold text-text-primary mb-4">Artículos en el Almacén</h2>
+            {isStorageActive && (
 
           <button
             onClick={() => {
@@ -285,7 +296,7 @@ const StorageDetailPage = () => {
           >
             <Plus className="w-5 h-5" />
           </button>
-
+            )}
         </div>
 
         <div className="overflow-x-auto">
@@ -308,15 +319,15 @@ const StorageDetailPage = () => {
                     </div>
                   </td>
                   <td className="py-3 px-4 text-text">{article.quantity}</td>
-                  <td className="py-3 px-4">
-                    <button
-                      onClick={() => handleMoveArticle(article.id, article.articleName)}
-                      className="btn-outline text-sm px-3 py-1"
-                      disabled={article.quantity === 0}
-                    >
-                      Devolver
-                    </button>
-                  </td>
+                    <td className="py-3 px-4">
+                        <button
+                            onClick={() => handleMoveArticle(article.id, article.articleName, article.quantity)}
+                            className="btn-outline text-sm px-3 py-1"
+                            disabled={article.quantity === 0}
+                        >
+                            Devolver
+                        </button>
+                    </td>
                 </tr>
               ))}
 

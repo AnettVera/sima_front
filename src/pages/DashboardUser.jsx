@@ -20,6 +20,7 @@ const DashboardUser = () => {
     const [selectedArticle, setSelectedArticle] = useState(null)
     const navigate = useNavigate()
     const id = storedUser?.id || ""
+    const isStorageActive = storage?.status === true;
 
 
 
@@ -62,10 +63,12 @@ const DashboardUser = () => {
             const [storageResponse, articlesResponse] = await Promise.all([
                 storageService.getByResponsible(id),
                 articleService.getArticlesByUser(id),
+
             ])
 
             setStorage(storageResponse.data.data)
             setArticles(articlesResponse.data.data)
+            console.log(storageResponse.data.data)
         } catch (error) {
             console.error("Error fetching storage details:", error)
         } finally {
@@ -74,13 +77,14 @@ const DashboardUser = () => {
     }
 
 
-    const handleMoveArticle = async (articleId, articleName) => {
+    const handleMoveArticle = async (articleId, articleName,availableQuantity) => {
         const { value: quantity } = await Swal.fire({
             title: `Mover ${articleName}`,
             text: "Ingresa la cantidad a mover:",
             input: "number",
             inputAttributes: {
                 min: 1,
+                max: availableQuantity,
                 step: 1,
             },
             showCancelButton: true,
@@ -96,6 +100,9 @@ const DashboardUser = () => {
             inputValidator: (value) => {
                 if (!value || value <= 0) {
                     return "Debes ingresar una cantidad válida"
+                }
+                if (value > availableQuantity) {
+                    return `Solo hay ${availableQuantity} unidades disponibles`
                 }
             },
         })
@@ -141,8 +148,8 @@ const DashboardUser = () => {
         return (
           <div className="min-h-screen flex  justify-center bg-background " >
               <div className="text-center">
-                  <h1 className="text-3xl font-bold text-text-textTitle mb-4">Sin almacén asignado</h1>
-                  <p className="text-text-textTitle">Por el momento no tienes ningún almacén asignado. Contacta con el administrador.</p>
+                  <h1 className="text-3xl font-bold text-text mb-4">Sin almacén asignado</h1>
+                  <p className="text-text">Por el momento no tienes ningún almacén asignado. Contacta con el administrador.</p>
               </div>
           </div>
         )
@@ -155,8 +162,8 @@ const DashboardUser = () => {
                     <button
                         onClick={() => {
                             setIsAddModalOpen(false)
-                            setSelectedArticle(null) // limpia el artículo
-                            setSelectedArticleId("") // limpia el ID
+                            setSelectedArticle(null)
+                            setSelectedArticleId("")
                         }}
                         className="btn-primary"
                     >
@@ -182,23 +189,29 @@ const DashboardUser = () => {
 
     return (
         <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className={`grid grid-cols-1 ${isStorageActive ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 mb-8`}>
                 <div className="card text-center">
-                    <h3 className="text-lg font-semibold text-text-primary mb-2">Productos</h3>
+                    <h3 className="text-lg font-semibold text-text-primary mb-2">Articulos</h3>
                     <div className="text-3xl font-bold text-secondary">{articles.length}</div>
                 </div>
 
                 <div className="card text-center">
-                    <h3 className="text-lg font-semibold text-text-primary mb-2">Responsable</h3>
+                    <h3 className="text-lg font-semibold text-text-primary mb-2">Estado</h3>
                     <div className="text-lg text-text">
-                        {storage.responsible ? `${storage.responsible.name} ${storage.responsible.lastName}` : "Sin asignar"}
+                        <p className="text-sm mb-2">
+                            <span
+                                className={`px-2 py-1 rounded-full text-xs ${storage.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                }`}
+                            >
+                  {storage.status ? "Activo" : "Inactivo"}
+                </span>
+                        </p>
                     </div>
                 </div>
+              {isStorageActive && (
 
                 <div className="card text-center" onClick={() => navigate(`/articles/user/`, { state: { category: storage.category?.categoryName } })}>
-                    <button
-
-                    >
+                    <button>
                         <h3 className="text-lg font-semibold text-text-primary mb-2">Registrar producto</h3>
 
                         <div className="text-center">
@@ -211,7 +224,7 @@ const DashboardUser = () => {
                         </div>
                     </button>
                 </div>
-
+                          )}
 
                 <div className="card text-center">
                     <h3 className="text-lg font-semibold text-text-primary mb-2">Total de Productos</h3>
@@ -256,7 +269,6 @@ const DashboardUser = () => {
                                 const value = Number(e.target.value);
                                 if (!selectedArticle) return;
 
-                                // Si supera el stock, se corrige automáticamente
                                 if (value > selectedArticle.quantity) {
                                     setAddQuantity(selectedArticle.quantity);
                                 } else {
@@ -285,6 +297,7 @@ const DashboardUser = () => {
                 </Modal>
 
 
+                {isStorageActive && (
 
                 <div className="flex justify-between items-center gap-4">
                     <h2 className="text-xl font-semibold text-text-primary mb-4">Artículos en el Almacén</h2>
@@ -300,7 +313,7 @@ const DashboardUser = () => {
                         <Plus className="w-5 h-5" />
                     </button>
 
-                </div>
+                </div> )}
 
                 <div className="overflow-x-auto">
                     <table className="w-full">
@@ -325,7 +338,7 @@ const DashboardUser = () => {
                                     <td className="py-3 px-4 text-text">{article.quantity}</td>
                                     <td className="py-3 px-4">
                                         <button
-                                            onClick={() => handleMoveArticle(article.id, article.articleName)}
+                                            onClick={() => handleMoveArticle(article.id, article.articleName, article.quantity)}
                                             className="btn-outline text-sm px-3 py-1"
                                             disabled={article.quantity === 0}
                                         >

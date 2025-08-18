@@ -96,7 +96,7 @@ const AppRouter = () => {
         }
       />
       <Route
-        path="/storages/:id"
+        path="/storages/details/"
         element={
           <ProtectedRoute allowedRoles={["ADMIN", "USER"]}>
             <StorageDetailPage />
