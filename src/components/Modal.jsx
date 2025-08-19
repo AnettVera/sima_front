@@ -3,9 +3,19 @@
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null
 
+  const handleOverlayMouseDown = (e) => {
+    // Solo permitir cerrar con mousedown, no con click/mouseup
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div 
+      className="modal-overlay" 
+      onMouseDown={handleOverlayMouseDown}
+    >
+      <div className="modal-content">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
           <button onClick={onClose} className="text-text hover:text-text-primary transition-colors">
