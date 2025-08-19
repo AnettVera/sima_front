@@ -8,6 +8,7 @@ const trimString = (value) => (typeof value === "string" ? value.trim() : value)
 const CategorySchema = Yup.object().shape({
   name: Yup.string()
     .required("El nombre de la categoría es requerido")
+    .matches(/^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+$/, "El nombre solo puede contener letras y espacios.")
     .test(
       "no-leading-trailing-spaces",
       "No puede tener espacios al inicio o final",
