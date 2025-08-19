@@ -9,6 +9,7 @@ import SearchBar from "../../components/SearchBar"
 import Modal from "../../components/Modal"
 import StorageForm from "../../components/forms/StorageForm"
 import { Eye } from "lucide-react"
+import Swal from "sweetalert2"
 
 const StoragesPage = () => {
   const navigate = useNavigate()
@@ -59,8 +60,32 @@ const StoragesPage = () => {
       return
     }
     
-    if (!availableManagers.length || !categories.length) {
-      console.warn("No hay managers o categorías disponibles")
+    // Verificar si no hay managers disponibles
+    if (!availableManagers || availableManagers.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "No hay gerentes disponibles",
+        text: "No se puede crear un almacén porque no hay gerentes disponibles para asignar.",
+        confirmButtonColor: "#16423C",
+        customClass: {
+          popup: "rounded-lg",
+          confirmButton: "rounded-lg",
+        },
+      })
+      return
+    }
+    
+    if (!categories.length) {
+      Swal.fire({
+        icon: "warning",
+        title: "No hay categorías disponibles",
+        text: "No se puede crear un almacén porque no hay categorías disponibles para asignar.",
+        confirmButtonColor: "#16423C",
+        customClass: {
+          popup: "rounded-lg",
+          confirmButton: "rounded-lg",
+        },
+      })
       return
     }
 
