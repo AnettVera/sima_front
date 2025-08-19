@@ -7,17 +7,23 @@ const UserSchema = (isEditing) =>
   Yup.object().shape({
     name: Yup.string()
       .required("El nombre es requerido")
+      .matches(/^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+$/, "El nombre solo puede contener letras y espacios.")
       .test("no-leading-trailing-spaces", "No puede tener espacios al inicio o final", (val) => val === val?.trim()),
+
     lastName: Yup.string()
       .required("Los apellidos son requeridos")
+      .matches(/^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+$/, "Los apellidos solo pueden contener letras y espacios.")
       .test("no-leading-trailing-spaces", "No puede tener espacios al inicio o final", (val) => val === val?.trim()),
+
     email: Yup.string()
       .email("Email inválido")
       .required("El email es requerido")
       .test("no-leading-trailing-spaces", "No puede tener espacios al inicio o final", (val) => val === val?.trim()),
+
     username: isEditing
       ? Yup.string()
           .required("El nombre de usuario es requerido")
+           .matches(/^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+$/, "El nombre de usuario solo puede contener letras y espacios.")
           .test("no-leading-trailing-spaces", "No puede tener espacios al inicio o final", (val) => val === val?.trim())
       : Yup.string(),
   })

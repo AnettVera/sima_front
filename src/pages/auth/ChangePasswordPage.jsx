@@ -9,7 +9,20 @@ import { userService } from "../../config/api"
 
 const ChangePasswordSchema = Yup.object().shape({
   currentPassword: Yup.string().required("Requerido"),
-  password: Yup.string().min(6, "La contraseña debe tener al menos 6 caracteres").required("Requerido"),
+  
+  password: Yup.string()
+    .min(6, "La contraseña debe tener al menos 6 caracteres")
+    .required("Requerido")
+    .matches(
+      /^[A-Za-z0-9!@#$%^&*(),.?":{}|<>-_+=~`[\]\\;:'"\/]*$/, 
+      "La contraseña contiene caracteres no permitidos"
+    )
+    .test(
+      "no-script",
+      "La contraseña no puede contener scripts",
+      (val) => !/<script.*?>.*?<\/script>/i.test(val)
+    ),
+  
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Las contraseñas deben coincidir")
     .required("Requerido"),
@@ -23,10 +36,9 @@ const ChangePasswordPage = () => {
 
   const navigate = useNavigate()
 
-  console.log("USER ID EN CHANGE-PASSWORD : ", user.id);
+  console.log("USER ID EN CHANGE-PASSWORD : ", user.id)
 
   const handleSubmit = async (values, { setSubmitting }) => {
-
     try {
       const result = await changePassword(
         user.id,
@@ -57,7 +69,6 @@ const ChangePasswordPage = () => {
         title: "Error",
         text: error,
       })
-
     }
   }
 
