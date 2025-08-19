@@ -8,6 +8,7 @@ export const useStorages = () => {
   const [storages, setStorages] = useState([])
   const [availableManagers, setAvailableManagers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [managersLoading, setManagersLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const fetchStorages = async () => {
@@ -26,11 +27,17 @@ export const useStorages = () => {
 
   const fetchAvailableManagers = async () => {
     try {
+      setManagersLoading(true)
       const response = await userService.getAvailableManagers()
-      console.log("respuesta:", response)
-      setAvailableManagers(response.data.data)
+      console.log("Available managers fetched:", response.data.data)
+      setAvailableManagers(response.data.data || [])
+      setError(null)
     } catch (err) {
+      console.error("Error fetching available managers:", err)
       setError(err.message)
+      setAvailableManagers([])
+    } finally {
+      setManagersLoading(false)
     }
   }
 
@@ -66,6 +73,8 @@ export const useStorages = () => {
       if (result.isConfirmed) {
         await storageService.create(storageData)
         await fetchStorages()
+        // Refrescar managers disponibles después de crear
+        await fetchAvailableManagers()
 
         Swal.fire({
           icon: "success",
@@ -106,6 +115,8 @@ export const useStorages = () => {
       if (result.isConfirmed) {
         await storageService.update(id, storageData)
         await fetchStorages()
+        // Refrescar managers disponibles después de actualizar
+        await fetchAvailableManagers()
 
         Swal.fire({
           icon: "success",
@@ -146,6 +157,8 @@ export const useStorages = () => {
       if (result.isConfirmed) {
         await storageService.delete(id)
         await fetchStorages()
+        // Refrescar managers disponibles después de eliminar
+        await fetchAvailableManagers()
 
         Swal.fire({
           icon: "success",
@@ -206,17 +219,28 @@ export const useStorages = () => {
     }
   }
 
-
+  // Cargar datos iniciales
   useEffect(() => {
-    fetchStorages()
-    fetchAvailableManagers()
+    const loadInitialData = async () => {
+      try {
+        // Ejecutar ambas llamadas en paralelo
+        await Promise.all([
+          fetchStorages(),
+          fetchAvailableManagers()
+        ])
+      } catch (error) {
+        console.error("Error loading initial data:", error)
+      }
+    }
+
+    loadInitialData()
   }, [])
 
   return {
-
     storages,
     availableManagers,
     loading,
+    managersLoading,
     error,
     fetchStorages,
     fetchAvailableManagers,
