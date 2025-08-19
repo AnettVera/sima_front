@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useStorages } from "../../hooks/useStorages"
 import { useCategories } from "../../hooks/useCategories"
@@ -16,19 +16,26 @@ const StoragesPage = () => {
     storages,
     availableManagers,
     loading,
+    managersLoading,
     createStorage,
     updateStorage,
     deleteStorage,
     toggleStorageStatus,
   } = useStorages()
 
-  const { categories } = useCategories()
+  const { categories, loading: categoriesLoading } = useCategories()
   const [filteredStorages, setFilteredStorages] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingStorage, setEditingStorage] = useState(null)
-
   const [currentPage, setCurrentPage] = useState(1)
+  
   const itemsPerPage = 9
+
+  // Debug: Log para verificar los datos
+  useEffect(() => {
+    console.log("Available managers:", availableManagers)
+    console.log("Categories:", categories)
+  }, [availableManagers, categories])
 
   const handleSearch = (searchTerm) => {
     if (!searchTerm.trim()) {
@@ -46,11 +53,28 @@ const StoragesPage = () => {
   }
 
   const handleCreateStorage = () => {
+    // Verificar que los datos necesarios estén cargados
+    if (managersLoading || categoriesLoading) {
+      console.warn("Todavía cargando datos necesarios para crear almacén")
+      return
+    }
+    
+    if (!availableManagers.length || !categories.length) {
+      console.warn("No hay managers o categorías disponibles")
+      return
+    }
+
     setEditingStorage(null)
     setIsModalOpen(true)
   }
 
   const handleEditStorage = (storage) => {
+    // Verificar que los datos necesarios estén cargados
+    if (managersLoading || categoriesLoading) {
+      console.warn("Todavía cargando datos necesarios para editar almacén")
+      return
+    }
+
     setEditingStorage(storage)
     setIsModalOpen(true)
   }
@@ -74,8 +98,12 @@ const StoragesPage = () => {
   }
 
   const handleViewStorage = (storageId) => {
-    navigate("/storages/details/", { state: { id: storageId } });
+    navigate("/storages/details/", { state: { id: storageId } })
+  }
 
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+    setEditingStorage(null)
   }
 
   const displayStorages = filteredStorages.length > 0 ? filteredStorages : storages
@@ -93,6 +121,7 @@ const StoragesPage = () => {
     }
   }
 
+  // Mostrar loading si cualquiera de los datos principales está cargando
   if (loading) {
     return (
       <div className="space-y-6">
@@ -108,23 +137,28 @@ const StoragesPage = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-h1-mobile md:text-h1-desktop font-bold text-primary">Gestión de Almacenes</h1>
-        <button onClick={handleCreateStorage} className="btn-outline ml-4">
-          Registrar Almacén
+        <button 
+          onClick={handleCreateStorage} 
+          className="btn-outline ml-4"
+          disabled={managersLoading || categoriesLoading}
+        >
+          {(managersLoading || categoriesLoading) ? "Cargando..." : "Registrar Almacén"}
         </button>
       </div>
 
       <div className="flex-1 justify-between items-center text-black">
-
-      <SearchBar className="flex-1 justify-between items-center text-black"
-        onSearch={handleSearch} placeholder="Escribe el nombre del almacén que deseas buscar"
-      />
+        <SearchBar 
+          className="flex-1 justify-between items-center text-black"
+          onSearch={handleSearch} 
+          placeholder="Escribe el nombre del almacén que deseas buscar"
+        />
       </div>
 
       {displayStorages.length === 0 ? (
         <div className="text-center py-8 text-text">No se encontraron almacenes</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedStorages.map((storage, index) => (
+          {paginatedStorages.map((storage) => (
             <div key={storage.id} className="card p-4 text-black relative">
               <label className="absolute top-4 right-4 inline-flex items-center cursor-pointer z-10">
                 <input
@@ -141,7 +175,9 @@ const StoragesPage = () => {
               <h3 className="text-lg font-semibold text-secondary mb-2">
                 {storage.storageIdentifier}
               </h3>
-              <p className="text-text mb-1">Categoría: {storage.category?.categoryName || "Sin categoría"}</p>
+              <p className="text-text mb-1">
+                Categoría: {storage.category?.categoryName || "Sin categoría"}
+              </p>
               <p className="text-text mb-1">
                 Responsable:{" "}
                 {storage.responsible
@@ -151,14 +187,14 @@ const StoragesPage = () => {
               <p className="text-sm mb-2">
                 Estado:{" "}
                 <span
-                  className={`px-2 py-1 rounded-full text-xs ${storage.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    storage.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  }`}
                 >
                   {storage.status ? "Activo" : "Inactivo"}
                 </span>
               </p>
 
-              {/* 📍 Botones centrados */}
               <div className="flex flex-wrap justify-center gap-2 mt-4">
                 <button
                   onClick={() => handleViewStorage(storage.id)}
@@ -170,6 +206,7 @@ const StoragesPage = () => {
                 <button
                   onClick={() => handleEditStorage(storage)}
                   className="btn-outline text-sm px-3 py-1"
+                  disabled={managersLoading || categoriesLoading}
                 >
                   Editar
                 </button>
@@ -181,7 +218,6 @@ const StoragesPage = () => {
                 </button>
               </div>
             </div>
-
           ))}
         </div>
       )}
@@ -200,10 +236,11 @@ const StoragesPage = () => {
             <button
               key={i}
               onClick={() => handlePageChange(i + 1)}
-              className={`px-3 py-1 rounded ${currentPage === i + 1
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
                   ? "bg-primary text-white"
                   : "bg-gray-200 text-black hover:bg-gray-300"
-                }`}
+              }`}
             >
               {i + 1}
             </button>
@@ -220,15 +257,17 @@ const StoragesPage = () => {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
         title={editingStorage ? "Editar Almacén" : "Crear Almacén"}
       >
         <StorageForm
           storage={editingStorage}
           onSubmit={handleSubmitStorage}
-          onCancel={() => setIsModalOpen(false)}
-          categories={categories}
-          availableManagers={availableManagers}
+          onCancel={handleModalClose}
+          categories={categories || []}
+          availableManagers={availableManagers || []}
+          managersLoading={managersLoading}
+          categoriesLoading={categoriesLoading}
         />
       </Modal>
     </div>
