@@ -15,6 +15,7 @@ import StoragesPage from "../pages/storages/StoragesPage"
 import ArticlesPage from "../pages/articles/ArticlesPage"
 import StorageDetailPage from "../pages/storages/StorageDetailPage"
 import UnauthorizedPage from "../pages/error/UnauthorizedPage" // crea esta página simple
+import NotFoundPage from "../pages/error/NotFoundPage"
 import LoadingSpinner from "../components/LoadingSpinner"
 import ArticlesUser from "../pages/users/ArticlesUser"
 import ChangePasswordPage from "../pages/auth/ChangePasswordPage"
@@ -122,6 +123,9 @@ const AppRouter = () => {
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+      <Route path="/404" element={<NotFoundPage />} />
+      <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   )
 }
